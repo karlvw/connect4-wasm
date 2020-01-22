@@ -1,4 +1,4 @@
-# Tic Tac Toe
+# Connect 4
 
 Testing out web assembly with rust.
 
