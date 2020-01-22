@@ -6,7 +6,7 @@
 pub const NUM_COLUMNS: usize = 7;
 pub const NUM_ROWS: usize = 5;
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq)]
 pub enum Cell {
     Empty,
     Computer,
@@ -29,5 +29,24 @@ impl Board {
     /// Gets the state of the cell at the given location
     pub fn get_cell(&self, row: usize, col: usize) -> &Cell {
         &self.cells[row][col]
+    }
+
+    /// Player makes a move in the given column
+    pub fn player_move(&mut self, col:usize) -> bool {
+        self.make_move(col, Cell::Player)
+    }
+
+    fn make_move(&mut self, col: usize, cell: Cell) -> bool {
+        if col >= NUM_COLUMNS {
+            return false;
+        }
+
+        for row in (0..NUM_ROWS).rev() {
+            if self.cells[row][col] == Cell::Empty {
+                self.cells[row][col] = cell;
+                return true;
+            }
+        }
+        false
     }
 }

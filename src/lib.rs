@@ -21,14 +21,14 @@ impl Default for Model {
 
 #[derive(Clone)]
 enum Msg {
-    Increment,
-    Decrement,
+    ColumnClick(usize), 
 }
 
 fn update(msg: Msg, model: &mut Model, _: &mut impl Orders<Msg>) {
     match msg {
-        Msg::Increment => (),
-        Msg::Decrement => (),
+        Msg::ColumnClick(col) => {
+            model.board.player_move(col);  
+        }
     }
 }
 
@@ -47,9 +47,9 @@ fn view(model: &Model) -> Node<Msg> {
         table![
             style!{St::Border => 1}, 
             tr![
-                (0..board::NUM_COLUMNS).map(|_|
+                (0..board::NUM_COLUMNS).map(|col|
                     th![ 
-                        button![ simple_ev(Ev::Click, Msg::Increment), "↓" ] 
+                        button![ simple_ev(Ev::Click, Msg::ColumnClick(col)), "↓" ] 
                     ],
                 )
             ],
