@@ -65,6 +65,15 @@ fn view(model: &Model) -> Node<Msg> {
                 ],
             )  
         ],
+        div![
+            match model.board.check_winner() {
+                Some(board::GameResult::PlayerWins) => "You Won!!",
+                Some(board::GameResult::ComputerWins) => "Oh no, you have lost.",
+                Some(board::GameResult::Draw) => "Looks like this one is a draw.",
+                None => "",
+            }
+        ]
+
     ]
 }
 
