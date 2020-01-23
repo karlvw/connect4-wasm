@@ -127,6 +127,15 @@ mod tests {
     use super::*;
 
     #[test]
+    fn fill_column() {
+        let mut board = Board::new();
+        for _ in 0..NUM_ROWS {
+            assert_eq!(board.player_move(0), true);
+        }
+        assert_eq!(board.player_move(0), false);
+    }
+
+    #[test]
     fn check_win_vertical() {
         let mut board = Board::new();
         for _ in 0..4 {

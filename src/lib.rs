@@ -4,6 +4,7 @@
 
 use seed::{prelude::*, *};
 mod board;
+mod ai;
 
 
 struct Model {
@@ -27,7 +28,11 @@ enum Msg {
 fn update(msg: Msg, model: &mut Model, _: &mut impl Orders<Msg>) {
     match msg {
         Msg::ColumnClick(col) => {
-            model.board.player_move(col);  
+            if model.board.check_winner() == None {
+                if model.board.player_move(col) {
+                    ai::make_move(&mut model.board);
+                }
+            }
         }
     }
 }
