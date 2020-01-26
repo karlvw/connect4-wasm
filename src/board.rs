@@ -4,7 +4,7 @@
 
 // Size of the board
 pub const NUM_COLUMNS: usize = 7;
-pub const NUM_ROWS: usize = 5;
+pub const NUM_ROWS: usize = 6;
 
 #[derive(Clone, Copy, PartialEq)]
 pub enum Cell {
