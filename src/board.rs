@@ -23,13 +23,15 @@ pub enum GameResult {
 #[derive(Clone)]
 pub struct Board {
     cells: [[Cell; NUM_COLUMNS]; NUM_ROWS],
+    moves_made: usize,
 }
 
 impl Board {
     /// Create a new blank board
     pub fn new() -> Self {
         Self {
-            cells: [[Cell::Empty; NUM_COLUMNS]; NUM_ROWS]
+            cells: [[Cell::Empty; NUM_COLUMNS]; NUM_ROWS],
+            moves_made: 0,
         }
     }
 
@@ -56,10 +58,16 @@ impl Board {
         for row in (0..NUM_ROWS).rev() {
             if self.cells[row][col] == Cell::Empty {
                 self.cells[row][col] = cell;
+                self.moves_made += 1;
                 return true;
             }
         }
         false
+    }
+
+    /// Returns the number of moves made on this board
+    pub fn num_moves_made(&self) -> usize {
+        self.moves_made
     }
 
     /// Check to see if the game has a winner or a draw
@@ -111,14 +119,11 @@ impl Board {
         }
 
         // Check for a draw
-        for row in 0..NUM_ROWS {
-            for col in 0..NUM_COLUMNS {
-                if self.cells[row][col] == Cell::Empty {
-                    return None; // Still some empty cells to make more moves
-                }
-            }
+        if self.moves_made >= (NUM_COLUMNS * NUM_ROWS) {
+            return Some(GameResult::Draw);
         }
-        Some(GameResult::Draw)
+        
+        None
     }
 }
 
