@@ -39,18 +39,20 @@ fn update(msg: Msg, model: &mut Model, _: &mut impl Orders<Msg>) {
 
 fn view(model: &Model) -> Node<Msg> {
 
+    let game_result = model.board.check_winner();
+
     let cell_view = |row, col| {
         let cell = model.board.get_cell(row, col);
         match cell {
             board::Cell::Empty => "",
-            board::Cell::Computer => "🍎", // Red apple
-            board::Cell::Player => "🍏", // Green apple
+            board::Cell::Computer => "🔴",
+            board::Cell::Player => "🔵",
         }
     };
 
     div![
+        attrs!{At::Class => "container"},
         table![
-            style!{St::Border => 1}, 
             tr![
                 (0..board::NUM_COLUMNS).map(|col|
                     th![ 
@@ -71,14 +73,17 @@ fn view(model: &Model) -> Node<Msg> {
             )  
         ],
         div![
-            match model.board.check_winner() {
+            match game_result {
+                None => attrs!{},
+                _ => attrs!{At::Class => "overlay"},
+            },
+            match game_result {
                 Some(board::GameResult::PlayerWins) => "You Won!!",
                 Some(board::GameResult::ComputerWins) => "Oh no, you have lost.",
                 Some(board::GameResult::Draw) => "Looks like this one is a draw.",
                 None => "",
             }
         ]
-
     ]
 }
 
