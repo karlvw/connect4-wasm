@@ -10,6 +10,12 @@ td.board-cell {
     text-align: center;
 }
 
+button {
+    height: 30px;
+    border: none;
+    background: whitesmoke;
+}
+
 th button {
     width: 100%;
 }
@@ -30,8 +36,12 @@ th button {
     height: 100%;
     display: flex;
     align-items: center;
-    justify-content: center;
     opacity: 0.8;
-    font-size: 30px;
     background-color: white;
+}
+
+.message {
+    width: 100%;
+    font-size: 30px;
+    text-align: center;
 }

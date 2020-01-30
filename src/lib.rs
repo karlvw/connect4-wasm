@@ -22,7 +22,8 @@ impl Default for Model {
 
 #[derive(Clone)]
 enum Msg {
-    ColumnClick(usize), 
+    ColumnClick(usize),
+    ResetGame,
 }
 
 fn update(msg: Msg, model: &mut Model, _: &mut impl Orders<Msg>) {
@@ -33,7 +34,10 @@ fn update(msg: Msg, model: &mut Model, _: &mut impl Orders<Msg>) {
                     ai::make_move(&mut model.board);
                 }
             }
-        }
+        },
+        Msg::ResetGame => {
+            model.board = board::Board::new();
+        },
     }
 }
 
@@ -72,18 +76,24 @@ fn view(model: &Model) -> Node<Msg> {
                 ],
             )  
         ],
-        div![
-            match game_result {
-                None => attrs!{},
-                _ => attrs!{At::Class => "overlay"},
-            },
-            match game_result {
-                Some(board::GameResult::PlayerWins) => "You Won!!",
-                Some(board::GameResult::ComputerWins) => "Oh no, you have lost.",
-                Some(board::GameResult::Draw) => "Looks like this one is a draw.",
-                None => "",
-            }
-        ]
+        if game_result != None {
+            div![
+                attrs!{At::Class => "overlay"},
+                div![
+                    attrs!{At::Class => "message"},
+                    match game_result {
+                        Some(board::GameResult::PlayerWins) => "You Won!!",
+                        Some(board::GameResult::ComputerWins) => "Oh no, you have lost.",
+                        Some(board::GameResult::Draw) => "Looks like this one is a draw.",
+                        None => "",
+                    },
+                    br![],
+                    button![ simple_ev(Ev::Click, Msg::ResetGame), "Play Again?" ]
+                ]
+            ]
+        } else {
+            div![]
+        }
     ]
 }
 
