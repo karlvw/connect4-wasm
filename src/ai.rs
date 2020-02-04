@@ -3,6 +3,7 @@
 //!
 //! 
 
+use rand::{thread_rng, Rng};
 use crate::board::{Board, GameResult, NUM_COLUMNS};
 
 /// How many moves into the future we will predict.
@@ -50,7 +51,7 @@ fn best_computer_move(board: &Board, remaining_iterations: i32) -> (usize, Board
 /// Simulates a player move averaging the scores for all valid player moves that don't end the game.
 /// If a player wins, it assumes the player will make that move.
 fn simulate_player_move(board: &Board, remaining_iterations: i32) -> BoardScore {
-    let mut score_sum = 0.0;
+    let mut score_sum = thread_rng().gen_range(-0.01, 0.01);  // A little randomness to make it less predictable
     let mut count = 0;
 
     for col in 0..NUM_COLUMNS {
