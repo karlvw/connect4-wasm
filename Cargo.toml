@@ -8,6 +8,6 @@ edition = "2018"
 crate-type = ["cdylib"]
 
 [dependencies]
-seed = "^0.5.1"
-wasm-bindgen = "^0.2.50"
+seed = "0.6"
+wasm-bindgen = "0.2.58"
 rand = { version = "0.7", features = ["wasm-bindgen"] }
