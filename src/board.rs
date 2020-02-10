@@ -72,7 +72,7 @@ impl Board {
 
     /// Check to see if the game has a winner or a draw
     pub fn check_winner(&self) -> Option<GameResult> {
-        let check_group = |c1, c2, c3, c4| -> Option<GameResult> {
+        let check_group = |&c1, &c2, &c3, &c4| -> Option<GameResult> {
             if (c1 == c2) && (c2 == c3) && (c3 == c4) {
                 match c1 {
                     Cell::Player => Some(GameResult::PlayerWins),
@@ -86,33 +86,33 @@ impl Board {
 
         for row in 0..NUM_ROWS {
             for col in 0..NUM_COLUMNS {
-                let c1 = self.cells[row][col];
+                let c1 = &self.cells[row][col];
 
-                if c1 == Cell::Empty {
+                if *c1 == Cell::Empty {
                     continue;
                 }
 
                 // Check for horizontal sequences
                 if col < (NUM_COLUMNS-3) {
-                    if let Some(result) = check_group(c1, self.cells[row][col+1], self.cells[row][col+2], self.cells[row][col+3]) {
+                    if let Some(result) = check_group(c1, &self.cells[row][col+1], &self.cells[row][col+2], &self.cells[row][col+3]) {
                         return Some(result);
                     }
                 }
 
                 if row < (NUM_ROWS-3) {
                     // Check for vertical sequences
-                    if let Some(result) = check_group(c1, self.cells[row+1][col], self.cells[row+2][col], self.cells[row+3][col]) {
+                    if let Some(result) = check_group(c1, &self.cells[row+1][col], &self.cells[row+2][col], &self.cells[row+3][col]) {
                         return Some(result);
                     }
 
                     // Check for diagonal sequences
                     if col < (NUM_COLUMNS-3) {
-                        if let Some(result) = check_group(c1, self.cells[row+1][col+1], self.cells[row+2][col+2], self.cells[row+3][col+3]) {
+                        if let Some(result) = check_group(c1, &self.cells[row+1][col+1], &self.cells[row+2][col+2], &self.cells[row+3][col+3]) {
                             return Some(result);
                         }
                     }
                     if col >= 3 {
-                        if let Some(result) = check_group(c1, self.cells[row+1][col-1], self.cells[row+2][col-2], self.cells[row+3][col-3]) {
+                        if let Some(result) = check_group(c1, &self.cells[row+1][col-1], &self.cells[row+2][col-2], &self.cells[row+3][col-3]) {
                             return Some(result);
                         }
                     }

@@ -92,7 +92,7 @@ fn view(model: &Model) -> Node<Msg> {
                 ]
             ]
         } else {
-            div![]
+            empty![]
         }
     ]
 }
