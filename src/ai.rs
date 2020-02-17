@@ -72,12 +72,8 @@ fn simulate_player_move(board: &Board, remaining_iterations: i32) -> BoardScore 
     return score_sum / count as BoardScore;
 }
 
-/// Makes a move on the on the given board
-pub fn make_move(board: &mut Board) {
-    if board.check_winner() != None {
-        return;
-    }
-
+/// Return the column for the best computer move
+pub fn best_move(board: &Board) -> usize {
     let (best_col, _) = best_computer_move(board, NUM_ITERATION);
-    board.computer_move(best_col);
+    best_col
 }

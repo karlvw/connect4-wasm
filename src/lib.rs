@@ -9,12 +9,16 @@ mod ai;
 
 struct Model {
     pub board: board::Board,
+    pub wins: u32,
+    pub losses: u32,
 }
 
 impl Default for Model {
     fn default() -> Self {
         Self {
             board: board::Board::new(),
+            wins: 0,
+            losses: 0,
         }
     }
 }
@@ -23,21 +27,45 @@ impl Default for Model {
 #[derive(Clone)]
 enum Msg {
     ColumnClick(usize),
+    ComputerMakeMove(usize),
     ResetGame,
 }
 
-fn update(msg: Msg, model: &mut Model, _: &mut impl Orders<Msg>) {
+async fn make_ai_move(board: board::Board) -> Result<Msg, Msg> {
+    let col = ai::best_move(&board);
+    Ok(Msg::ComputerMakeMove(col))
+}
+
+fn update(msg: Msg, model: &mut Model, orders: &mut impl Orders<Msg>) {
+    let mut move_made = false;
+
     match msg {
         Msg::ColumnClick(col) => {
             if model.board.check_winner() == None {
                 if model.board.player_move(col) {
-                    ai::make_move(&mut model.board);
+                    move_made = true;
+                    orders.perform_cmd(make_ai_move(model.board.clone()));
+                }
+            }
+        },
+        Msg::ComputerMakeMove(col) => {
+            if model.board.check_winner() == None {
+                if model.board.computer_move(col) {
+                    move_made = true;
                 }
             }
         },
         Msg::ResetGame => {
             model.board = board::Board::new();
         },
+    }
+
+    if move_made {
+        match model.board.check_winner() {
+            Some(board::GameResult::PlayerWins) => model.wins += 1,
+            Some(board::GameResult::ComputerWins) => model.losses +=1,
+            _ => (),
+        }
     }
 }
 
@@ -93,7 +121,10 @@ fn view(model: &Model) -> Node<Msg> {
             ]
         } else {
             empty![]
-        }
+        },
+        div![
+            format!("Wins: {} Losses: {}", model.wins, model.losses)
+        ]
     ]
 }
 
