@@ -2,11 +2,14 @@
 //! Connect 4 Board
 //! 
 
+use serde::{Serialize, Deserialize};
+
 // Size of the board
 pub const NUM_COLUMNS: usize = 7;
 pub const NUM_ROWS: usize = 6;
 
-#[derive(Clone, Copy, PartialEq)]
+
+#[derive(Clone, Copy, PartialEq, Serialize, Deserialize)] 
 pub enum Cell {
     Empty,
     Computer,
@@ -20,7 +23,7 @@ pub enum GameResult {
     Draw,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct Board {
     cells: [[Cell; NUM_COLUMNS]; NUM_ROWS],
     moves_made: usize,

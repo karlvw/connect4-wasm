@@ -2,11 +2,14 @@
 //! A Connect 4 Game using wasm and rust
 //! 
 
+use serde::{Serialize, Deserialize};
+use serde_json;
 use seed::{prelude::*, *};
 mod board;
 mod ai;
 
 
+#[derive(Serialize, Deserialize)]
 struct Model {
     pub board: board::Board,
     pub wins: u32,
@@ -29,6 +32,21 @@ enum Msg {
     ColumnClick(usize),
     ComputerMakeMove(usize),
     ResetGame,
+}
+
+
+fn after_mount(_: Url, _orders: &mut impl Orders<Msg>) -> AfterMount<Model> {
+    // Load the model at startup
+    let load_saved_model = || {
+        let storage = seed::storage::get_storage()?;
+        let loaded_serialized = storage.get_item("model").ok()??;
+        Some(serde_json::from_str(&loaded_serialized).ok()?)
+    };
+
+    AfterMount::new(match load_saved_model() {
+        Some(model) => model,
+        None => Model::default(),
+    })
 }
 
 async fn make_ai_move(board: board::Board) -> Result<Msg, Msg> {
@@ -65,6 +83,13 @@ fn update(msg: Msg, model: &mut Model, orders: &mut impl Orders<Msg>) {
             Some(board::GameResult::PlayerWins) => model.wins += 1,
             Some(board::GameResult::ComputerWins) => model.losses +=1,
             _ => (),
+        }
+    }
+
+    // Save the state of the model
+    if let Some(storage) = seed::storage::get_storage() {
+        if let Ok(data) = serde_json::to_string(&model) {
+            storage.set_item("model", &data).ok();
         }
     }
 }
@@ -130,5 +155,7 @@ fn view(model: &Model) -> Node<Msg> {
 
 #[wasm_bindgen(start)]
 pub fn render() {
-    App::builder(update, view).build_and_start();
+    App::builder(update, view)
+        .after_mount(after_mount)
+        .build_and_start();
 }
