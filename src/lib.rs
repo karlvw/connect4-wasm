@@ -5,13 +5,21 @@
 use serde::{Serialize, Deserialize};
 use serde_json;
 use seed::{prelude::*, *};
+use gloo_timers::future::TimeoutFuture;
+
 mod board;
 mod ai;
 
+#[derive(Serialize, Deserialize, PartialEq)]
+enum Turn {
+    Player,
+    Computer,
+}
 
 #[derive(Serialize, Deserialize)]
 struct Model {
     pub board: board::Board,
+    pub turn: Turn,
     pub wins: u32,
     pub losses: u32,
 }
@@ -20,6 +28,7 @@ impl Default for Model {
     fn default() -> Self {
         Self {
             board: board::Board::new(),
+            turn: Turn::Player,
             wins: 0,
             losses: 0,
         }
@@ -50,6 +59,7 @@ fn after_mount(_: Url, _orders: &mut impl Orders<Msg>) -> AfterMount<Model> {
 }
 
 async fn make_ai_move(board: board::Board) -> Result<Msg, Msg> {
+    TimeoutFuture::new(20).await;  // Wait for the screen to redraw
     let col = ai::best_move(&board);
     Ok(Msg::ComputerMakeMove(col))
 }
@@ -59,17 +69,19 @@ fn update(msg: Msg, model: &mut Model, orders: &mut impl Orders<Msg>) {
 
     match msg {
         Msg::ColumnClick(col) => {
-            if model.board.check_winner() == None {
+            if model.turn == Turn::Player && model.board.check_winner().is_none() {
                 if model.board.player_move(col) {
                     move_made = true;
+                    model.turn = Turn::Computer;
                     orders.perform_cmd(make_ai_move(model.board.clone()));
                 }
             }
         },
         Msg::ComputerMakeMove(col) => {
-            if model.board.check_winner() == None {
+            if model.turn == Turn::Computer && model.board.check_winner().is_none() {
                 if model.board.computer_move(col) {
                     move_made = true;
+                    model.turn = Turn::Player;
                 }
             }
         },
