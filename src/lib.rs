@@ -10,7 +10,7 @@ use gloo_timers::future::TimeoutFuture;
 mod board;
 mod ai;
 
-#[derive(Serialize, Deserialize, PartialEq)]
+#[derive(Serialize, Deserialize, PartialEq, Clone)]
 enum Turn {
     Player,
     Computer,
@@ -20,6 +20,7 @@ enum Turn {
 struct Model {
     pub board: board::Board,
     pub turn: Turn,
+    pub who_starts: Turn,
     pub wins: u32,
     pub losses: u32,
 }
@@ -29,6 +30,7 @@ impl Default for Model {
         Self {
             board: board::Board::new(),
             turn: Turn::Player,
+            who_starts: Turn::Player,
             wins: 0,
             losses: 0,
         }
@@ -87,6 +89,15 @@ fn update(msg: Msg, model: &mut Model, orders: &mut impl Orders<Msg>) {
         },
         Msg::ResetGame => {
             model.board = board::Board::new();
+            // Take turns starting
+            model.who_starts = match model.who_starts {
+                Turn::Player => Turn::Computer,
+                Turn::Computer => Turn::Player
+            };
+            model.turn = model.who_starts.clone();
+            if model.turn == Turn::Computer {
+                orders.perform_cmd(make_ai_move(model.board.clone()));
+            }
         },
     }
 
