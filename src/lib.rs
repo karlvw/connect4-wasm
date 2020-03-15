@@ -46,16 +46,22 @@ enum Msg {
 }
 
 
-fn after_mount(_: Url, _orders: &mut impl Orders<Msg>) -> AfterMount<Model> {
+fn after_mount(_: Url, orders: &mut impl Orders<Msg>) -> AfterMount<Model> {
     // Load the model at startup
-    let load_saved_model = || {
+    let load_saved_model = || -> Option<Model> {
         let storage = seed::storage::get_storage()?;
         let loaded_serialized = storage.get_item("model").ok()??;
         Some(serde_json::from_str(&loaded_serialized).ok()?)
     };
 
     AfterMount::new(match load_saved_model() {
-        Some(model) => model,
+        Some(model) => {
+            if model.turn == Turn::Computer {
+                // Trigger the computer to make a move if it is its turn
+                orders.perform_cmd(make_ai_move(model.board.clone()));
+            }
+            model
+        },
         None => Model::default(),
     })
 }
