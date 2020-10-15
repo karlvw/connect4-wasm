@@ -3,12 +3,13 @@
 //! 
 
 use serde::{Serialize, Deserialize};
-use serde_json;
 use seed::{prelude::*, *};
 use gloo_timers::future::TimeoutFuture;
 
 mod board;
 mod ai;
+
+const STORAGE_KEY: &str = "model";
 
 #[derive(Serialize, Deserialize, PartialEq, Clone)]
 enum Turn {
@@ -48,28 +49,19 @@ enum Msg {
 
 fn after_mount(_: Url, orders: &mut impl Orders<Msg>) -> AfterMount<Model> {
     // Load the model at startup
-    let load_saved_model = || -> Option<Model> {
-        let storage = seed::storage::get_storage()?;
-        let loaded_serialized = storage.get_item("model").ok()??;
-        Some(serde_json::from_str(&loaded_serialized).ok()?)
-    };
+    let model: Model = LocalStorage::get(STORAGE_KEY).unwrap_or_default();
 
-    AfterMount::new(match load_saved_model() {
-        Some(model) => {
-            if model.turn == Turn::Computer {
-                // Trigger the computer to make a move if it is its turn
-                orders.perform_cmd(make_ai_move(model.board.clone()));
-            }
-            model
-        },
-        None => Model::default(),
-    })
+    if model.turn == Turn::Computer {
+        // Trigger the computer to make a move if it is its turn
+        orders.perform_cmd(make_ai_move(model.board.clone()));
+    }
+    AfterMount::new(model)
 }
 
-async fn make_ai_move(board: board::Board) -> Result<Msg, Msg> {
+async fn make_ai_move(board: board::Board) -> Msg {
     TimeoutFuture::new(20).await;  // Wait for the screen to redraw
     let col = ai::best_move(&board);
-    Ok(Msg::ComputerMakeMove(col))
+    Msg::ComputerMakeMove(col)
 }
 
 fn update(msg: Msg, model: &mut Model, orders: &mut impl Orders<Msg>) {
@@ -116,11 +108,7 @@ fn update(msg: Msg, model: &mut Model, orders: &mut impl Orders<Msg>) {
     }
 
     // Save the state of the model
-    if let Some(storage) = seed::storage::get_storage() {
-        if let Ok(data) = serde_json::to_string(&model) {
-            storage.set_item("model", &data).ok();
-        }
-    }
+    LocalStorage::insert(STORAGE_KEY, &model).ok();
 }
 
 fn view(model: &Model) -> Node<Msg> {
@@ -137,7 +125,7 @@ fn view(model: &Model) -> Node<Msg> {
     };
 
     div![
-        attrs!{At::Class => "container"},
+        class!["container"],
         table![
             tr![
                 (0..board::NUM_COLUMNS).map(|col|
@@ -151,18 +139,18 @@ fn view(model: &Model) -> Node<Msg> {
                 tr![
                     (0..board::NUM_COLUMNS).map(|col|
                         td![
-                            attrs!{At::Class => "board-cell"}, 
+                            class!["board-cell"], 
                             cell_view(row, col) 
                         ],
                     )
                 ],
             )  
         ],
-        if game_result != None {
+        IF!(game_result.is_some() =>
             div![
-                attrs!{At::Class => "overlay"},
+                class!["overlay"],
                 div![
-                    attrs!{At::Class => "message"},
+                    class!["message"],
                     match game_result {
                         Some(board::GameResult::PlayerWins) => "You Won!!",
                         Some(board::GameResult::ComputerWins) => "Oh no, you have lost.",
@@ -173,9 +161,7 @@ fn view(model: &Model) -> Node<Msg> {
                     button![ simple_ev(Ev::Click, Msg::ResetGame), "Play Again?" ]
                 ]
             ]
-        } else {
-            empty![]
-        },
+        ),
         div![
             format!("Wins: {} Losses: {}", model.wins, model.losses)
         ]
