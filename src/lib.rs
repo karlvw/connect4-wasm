@@ -47,7 +47,7 @@ enum Msg {
 }
 
 
-fn after_mount(_: Url, orders: &mut impl Orders<Msg>) -> AfterMount<Model> {
+fn init(_: Url, orders: &mut impl Orders<Msg>) -> Model {
     // Load the model at startup
     let model: Model = LocalStorage::get(STORAGE_KEY).unwrap_or_default();
 
@@ -55,7 +55,7 @@ fn after_mount(_: Url, orders: &mut impl Orders<Msg>) -> AfterMount<Model> {
         // Trigger the computer to make a move if it is its turn
         orders.perform_cmd(make_ai_move(model.board.clone()));
     }
-    AfterMount::new(model)
+    model
 }
 
 async fn make_ai_move(board: board::Board) -> Msg {
@@ -125,12 +125,12 @@ fn view(model: &Model) -> Node<Msg> {
     };
 
     div![
-        class!["container"],
+        C!["container"],
         table![
             tr![
                 (0..board::NUM_COLUMNS).map(|col|
                     th![ 
-                        button![ simple_ev(Ev::Click, Msg::ColumnClick(col)), "↓" ] 
+                        button![ ev(Ev::Click, move |_| Msg::ColumnClick(col)), "↓" ] 
                     ],
                 )
             ],
@@ -139,7 +139,7 @@ fn view(model: &Model) -> Node<Msg> {
                 tr![
                     (0..board::NUM_COLUMNS).map(|col|
                         td![
-                            class!["board-cell"], 
+                            C!["board-cell"], 
                             cell_view(row, col) 
                         ],
                     )
@@ -148,9 +148,9 @@ fn view(model: &Model) -> Node<Msg> {
         ],
         IF!(game_result.is_some() =>
             div![
-                class!["overlay"],
+                C!["overlay"],
                 div![
-                    class!["message"],
+                    C!["message"],
                     match game_result {
                         Some(board::GameResult::PlayerWins) => "You Won!!",
                         Some(board::GameResult::ComputerWins) => "Oh no, you have lost.",
@@ -158,7 +158,7 @@ fn view(model: &Model) -> Node<Msg> {
                         None => "",
                     },
                     br![],
-                    button![ simple_ev(Ev::Click, Msg::ResetGame), "Play Again?" ]
+                    button![ ev(Ev::Click, |_| Msg::ResetGame), "Play Again?" ]
                 ]
             ]
         ),
@@ -169,8 +169,7 @@ fn view(model: &Model) -> Node<Msg> {
 }
 
 #[wasm_bindgen(start)]
-pub fn render() {
-    App::builder(update, view)
-        .after_mount(after_mount)
-        .build_and_start();
+pub fn start() {
+    // Mount the `app` to the element with the `id` "app".
+    App::start("app", init, update, view);
 }
