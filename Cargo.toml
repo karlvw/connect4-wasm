@@ -1,14 +1,13 @@
 [package]
 name = "connect4-wasm"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["Karl van Workum <karl.vanworkum@gmail.com>"]
-edition = "2018"
-
-[lib]
-crate-type = ["cdylib"]
+edition = "2021"
+license = "MIT"
 
 [dependencies]
-seed = "0.8"
+yew = { version = "0.20", features = ["csr"] }
 serde = "1.0"
+getrandom = { version = "0.2", features = ["js"] }
 rand = "0.8"
-gloo-timers = { version = "0.2.0", features = ["futures"] }
+gloo = "0.10"

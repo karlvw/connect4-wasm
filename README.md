@@ -7,7 +7,7 @@ Testing out web assembly with rust.
 ```
 rustup update
 rustup target add wasm32-unknown-unknown
-cargo install --force cargo-make
+cargo install --locked trunk
 ```
 
 ## Build
@@ -15,5 +15,5 @@ cargo install --force cargo-make
 The debug build runs very slowly, the release build is much faster.
 
 ```
-cargo make build_release && cargo make serve
+trunk serve --release
 ```
